@@ -1,4 +1,4 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
@@ -9,17 +9,31 @@ interface CareerPageProps {
 }
 
 export default async function CareerPage({ params }: CareerPageProps) {
-  const careers = await DataService.getCareers();
-  const career = careers.find(c => c.slug === params.slug);
+  const career = await prisma.career.findUnique({
+    where: { slug: params.slug }
+  });
 
   if (!career) {
     notFound();
   }
 
-  const relatedCareers = careers.filter(c => 
-    c.id !== career.id && 
-    (c.department === career.department || c.location === career.location)
-  ).slice(0, 3);
+  const requirements = JSON.parse(career.requirements || '[]');
+  const benefits = JSON.parse(career.benefits || '[]');
+
+  const relatedCareers = await prisma.career.findMany({
+    where: {
+      AND: [
+        { id: { not: career.id } },
+        {
+          OR: [
+            { department: career.department },
+            { location: career.location }
+          ]
+        }
+      ]
+    },
+    take: 3
+  });
 
   return (
     <div className="min-h-screen">
@@ -32,7 +46,7 @@ export default async function CareerPage({ params }: CareerPageProps) {
               <div className="mb-6">
                 <div className="flex items-center gap-4 mb-4">
                   <span className="px-3 py-1 bg-primary/10 text-primary text-sm rounded uppercase">
-                    {career.type.replace('-', ' ')}
+                    {career.type}
                   </span>
                   <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm rounded">
                     {career.experience} level
@@ -61,29 +75,33 @@ export default async function CareerPage({ params }: CareerPageProps) {
               </div>
 
               <div className="grid md:grid-cols-2 gap-8 mb-8">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Requirements</h3>
-                  <ul className="space-y-2">
-                    {career.requirements.map((req, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">→</span>
-                        <span className="text-gray-600">{req}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {requirements.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Requirements</h3>
+                    <ul className="space-y-2">
+                      {requirements.map((req: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-primary mt-1">→</span>
+                          <span className="text-gray-600">{req}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Benefits</h3>
-                  <ul className="space-y-2">
-                    {career.benefits.map((benefit, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">→</span>
-                        <span className="text-gray-600">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {benefits.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Benefits</h3>
+                    <ul className="space-y-2">
+                      {benefits.map((benefit: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-primary mt-1">→</span>
+                          <span className="text-gray-600">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               <div className="bg-gray-50 p-6 rounded-lg">
@@ -117,7 +135,7 @@ export default async function CareerPage({ params }: CareerPageProps) {
                 >
                   <div className="flex items-center gap-2 mb-3">
                     <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded uppercase">
-                      {related.type.replace('-', ' ')}
+                      {related.type}
                     </span>
                   </div>
                   <h3 className="font-semibold mb-2">{related.title}</h3>
@@ -135,11 +153,4 @@ export default async function CareerPage({ params }: CareerPageProps) {
       <Footer />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  const careers = await DataService.getCareers();
-  return careers.map((career) => ({
-    slug: career.slug,
-  }));
 }

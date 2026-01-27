@@ -2,9 +2,20 @@ import { prisma } from "@/lib/prisma";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
 
+export const revalidate = 3600; // Cache for 1 hour
+
 export default async function IndustriesPage() {
   const industries = await prisma.industry.findMany({
-    orderBy: { featured: 'desc' }
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      featured: true,
+      trends: true
+    },
+    orderBy: { featured: 'desc' },
+    take: 50
   });
   const featuredIndustries = industries.filter(i => i.featured);
   const allIndustries = industries.filter(i => !i.featured);

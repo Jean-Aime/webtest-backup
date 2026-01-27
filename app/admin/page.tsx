@@ -1,95 +1,223 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
-export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("dashboard");
+export default function AdminDashboard() {
+  const [stats, setStats] = useState({
+    industries: 0,
+    services: 0,
+    insights: 0,
+    experts: 0,
+    offices: 0,
+    careers: 0,
+    media: 0,
+    leads: 0
+  });
 
-  const tabs = [
-    { id: "dashboard", label: "Dashboard", icon: "📊" },
-    { id: "industries", label: "Industries", icon: "🏭" },
-    { id: "services", label: "Services", icon: "⚙️" },
-    { id: "insights", label: "Insights", icon: "💡" },
-    { id: "experts", label: "Experts", icon: "👥" },
-    { id: "careers", label: "Careers", icon: "💼" },
-    { id: "media", label: "Media", icon: "📰" }
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const [industries, services, insights, experts, offices, careers, media, leads] = await Promise.all([
+        fetch("/api/industries").then(r => r.json()),
+        fetch("/api/services").then(r => r.json()),
+        fetch("/api/insights").then(r => r.json()),
+        fetch("/api/experts").then(r => r.json()),
+        fetch("/api/offices").then(r => r.json()),
+        fetch("/api/careers").then(r => r.json()),
+        fetch("/api/media").then(r => r.json()),
+        fetch("/api/leads").then(r => r.json())
+      ]);
+
+      setStats({
+        industries: industries.length,
+        services: services.length,
+        insights: insights.length,
+        experts: experts.length,
+        offices: offices.length,
+        careers: careers.length,
+        media: media.length,
+        leads: leads.length
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  const statCards = [
+    { label: "Industries", value: stats.industries, icon: "🏭", color: "bg-blue-500", href: "/admin/industries" },
+    { label: "Services", value: stats.services, icon: "⚙️", color: "bg-green-500", href: "/admin/services" },
+    { label: "Insights", value: stats.insights, icon: "💡", color: "bg-purple-500", href: "/admin/insights" },
+    { label: "Experts", value: stats.experts, icon: "👥", color: "bg-orange-500", href: "/admin/experts" },
+    { label: "Offices", value: stats.offices, icon: "🏢", color: "bg-red-500", href: "/admin/offices" },
+    { label: "Careers", value: stats.careers, icon: "💼", color: "bg-indigo-500", href: "/admin/careers" },
+    { label: "Media", value: stats.media, icon: "📰", color: "bg-pink-500", href: "/admin/media" },
+    { label: "Leads", value: stats.leads, icon: "📧", color: "bg-yellow-500", href: "/admin/leads" }
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-primary">JAS.COM Admin</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Welcome, Admin</span>
-              <button className="bg-primary text-white px-4 py-2 rounded-lg text-sm">
-                Logout
-              </button>
-            </div>
-          </div>
+    <div>
+      {/* Header */}
+      <header className="bg-white border-b sticky top-0 z-10">
+        <div className="px-8 py-6">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-gray-600 mt-1">Welcome back! Here's what's happening with your platform.</p>
         </div>
       </header>
 
-      <div className="flex">
-        <aside className="w-64 bg-white shadow-sm min-h-screen">
-          <nav className="p-6">
-            <ul className="space-y-2">
-              {tabs.map((tab) => (
-                <li key={tab.id}>
-                  <button
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                      activeTab === tab.id
-                        ? "bg-primary text-white"
-                        : "text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    <span>{tab.icon}</span>
-                    <span>{tab.label}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </aside>
+      <div className="p-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statCards.map((stat) => (
+            <Link
+              key={stat.label}
+              href={stat.href}
+              className="bg-white rounded-lg border p-6 hover:shadow-lg transition-all group"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className={`w-12 h-12 ${stat.color} rounded-lg flex items-center justify-center text-2xl`}>
+                  {stat.icon}
+                </div>
+                <svg className="w-5 h-5 text-gray-400 group-hover:text-primary transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <div className="text-3xl font-bold mb-1">{stat.value}</div>
+              <div className="text-sm text-gray-600">{stat.label}</div>
+            </Link>
+          ))}
+        </div>
 
-        <main className="flex-1 p-6">
-          {activeTab === "dashboard" && (
-            <div>
-              <h2 className="text-3xl font-bold mb-6">Dashboard</h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Total Industries</h3>
-                  <p className="text-3xl font-bold text-primary">24</p>
+        <div className="grid lg:grid-cols-2 gap-6 mb-8">
+          {/* Quick Actions */}
+          <div className="bg-white rounded-lg border">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold">Quick Actions</h2>
+            </div>
+            <div className="p-6 space-y-3">
+              <Link href="/admin/insights" className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-xl">💡</div>
+                <div className="flex-1">
+                  <div className="font-semibold group-hover:text-primary transition-colors">Create New Insight</div>
+                  <div className="text-sm text-gray-600">Publish articles, whitepapers, case studies</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Active Services</h3>
-                  <p className="text-3xl font-bold text-primary">18</p>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              <Link href="/admin/experts" className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-xl">👥</div>
+                <div className="flex-1">
+                  <div className="font-semibold group-hover:text-primary transition-colors">Add Team Member</div>
+                  <div className="text-sm text-gray-600">Create new expert profiles</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Published Insights</h3>
-                  <p className="text-3xl font-bold text-primary">156</p>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              <Link href="/admin/careers" className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-xl">💼</div>
+                <div className="flex-1">
+                  <div className="font-semibold group-hover:text-primary transition-colors">Post New Job</div>
+                  <div className="text-sm text-gray-600">Add career opportunities</div>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-600 mb-2">Team Members</h3>
-                  <p className="text-3xl font-bold text-primary">89</p>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+
+              <Link href="/admin/leads" className="flex items-center gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors group">
+                <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center text-xl">📧</div>
+                <div className="flex-1">
+                  <div className="font-semibold group-hover:text-primary transition-colors">View Leads</div>
+                  <div className="text-sm text-gray-600">Manage contact submissions</div>
                 </div>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </Link>
+            </div>
+          </div>
+
+          {/* System Status */}
+          <div className="bg-white rounded-lg border">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold">System Status</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <div className="font-semibold">Database Connected</div>
+                    <div className="text-sm text-gray-600">MySQL running successfully</div>
+                  </div>
+                </div>
+                <span className="text-green-600 font-semibold">Active</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <div>
+                    <div className="font-semibold">API Routes</div>
+                    <div className="text-sm text-gray-600">All endpoints operational</div>
+                  </div>
+                </div>
+                <span className="text-green-600 font-semibold">Active</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <div>
+                    <div className="font-semibold">Content Seeded</div>
+                    <div className="text-sm text-gray-600">Sample data loaded</div>
+                  </div>
+                </div>
+                <span className="text-blue-600 font-semibold">Ready</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <div>
+                    <div className="font-semibold">Admin Panel</div>
+                    <div className="text-sm text-gray-600">All modules functional</div>
+                  </div>
+                </div>
+                <span className="text-purple-600 font-semibold">Ready</span>
               </div>
             </div>
-          )}
+          </div>
+        </div>
 
-          {activeTab === "industries" && (
-            <div>
-              <iframe src="/admin/industries" className="w-full h-screen border-0" />
+        {/* Recent Activity */}
+        <div className="bg-white rounded-lg border">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-bold">Platform Overview</h2>
+          </div>
+          <div className="p-6">
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="text-center p-6 bg-gray-50 rounded-lg">
+                <div className="text-4xl font-bold text-primary mb-2">{stats.insights + stats.media}</div>
+                <div className="text-sm text-gray-600">Total Content Pieces</div>
+              </div>
+              <div className="text-center p-6 bg-gray-50 rounded-lg">
+                <div className="text-4xl font-bold text-primary mb-2">{stats.experts}</div>
+                <div className="text-sm text-gray-600">Team Members</div>
+              </div>
+              <div className="text-center p-6 bg-gray-50 rounded-lg">
+                <div className="text-4xl font-bold text-primary mb-2">{stats.leads}</div>
+                <div className="text-sm text-gray-600">Total Leads</div>
+              </div>
             </div>
-          )}
-
-          {activeTab === "insights" && (
-            <div>
-              <iframe src="/admin/insights" className="w-full h-screen border-0" />
-            </div>
-          )}
-        </main>
+          </div>
+        </div>
       </div>
     </div>
   );

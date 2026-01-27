@@ -1,17 +1,22 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
 import NewsletterSignup from "@/components/Newsletter/NewsletterSignup";
 
 export default async function ServicesPage() {
-  const services = await DataService.getServices();
+  const services = await prisma.service.findMany({
+    include: {
+      subServices: true
+    },
+    orderBy: { featured: 'desc' }
+  });
+  
   const featuredServices = services.filter(s => s.featured);
 
   return (
     <div className="min-h-screen">
       <MegaMenuHeader />
       
-      {/* Services Hero */}
       <section className="bg-gradient-to-br from-primary/10 to-red-50 py-20 pt-32">
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-4xl">
@@ -23,7 +28,6 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Core Services */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl font-bold mb-12">Core Services</h2>
@@ -61,30 +65,20 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Capabilities Grid */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl font-bold mb-12">Specialized Capabilities</h2>
+          <h2 className="text-3xl font-bold mb-12">All Services</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: "Digital & AI", description: "Technology-driven transformation", href: "/digital" },
-              { name: "Innovation", description: "Future-focused solutions", href: "/innovation" },
-              { name: "Sustainability", description: "ESG and climate strategies", href: "/sustainability" },
-              { name: "Operations Excellence", description: "Operational optimization", href: "/operations" },
-              { name: "M&A Strategy", description: "Merger & acquisition support", href: "/ma-strategy" },
-              { name: "Change Management", description: "Organizational transformation", href: "/change-management" },
-              { name: "Data & Analytics", description: "Data-driven insights", href: "/data-analytics" },
-              { name: "Customer Experience", description: "CX transformation", href: "/customer-experience" }
-            ].map((capability) => (
+            {services.filter(s => !s.featured).map((service) => (
               <a
-                key={capability.name}
-                href={capability.href}
+                key={service.id}
+                href={`/services/${service.slug}`}
                 className="bg-white p-6 rounded-lg hover:shadow-md transition-all group"
               >
                 <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-                  {capability.name}
+                  {service.name}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">{capability.description}</p>
+                <p className="text-sm text-gray-600 mb-3">{service.description}</p>
                 <div className="text-primary text-sm font-medium group-hover:translate-x-1 transition-transform">
                   Explore →
                 </div>
@@ -94,7 +88,6 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Methodologies */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
@@ -138,7 +131,6 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="py-16 bg-primary text-white">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Business?</h2>
@@ -146,9 +138,9 @@ export default async function ServicesPage() {
             Let's discuss how our services can help you achieve your strategic objectives
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <button className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+            <a href="/contact" className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
               Start a Conversation
-            </button>
+            </a>
             <a href="/insights" className="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-primary transition-all">
               View Case Studies
             </a>
@@ -156,7 +148,6 @@ export default async function ServicesPage() {
         </div>
       </section>
 
-      {/* Newsletter Signup */}
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="max-w-2xl mx-auto">

@@ -39,23 +39,39 @@ export default function ApplicationForm({ jobTitle, jobId }: ApplicationFormProp
 
     setLoading(true);
 
-    // In production: Upload to server/ATS
-    const applicationData = {
-      ...formData,
-      jobId,
-      jobTitle,
-      resumeFileName: resume.name,
-      resumeSize: resume.size,
-      timestamp: new Date()
-    };
+    try {
+      // Upload resume
+      const uploadData = new FormData();
+      uploadData.append('file', resume);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadData
+      });
+      
+      const { url } = await uploadResponse.json();
 
-    console.log("Application submitted:", applicationData);
+      // Submit application
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          careerId: jobId,
+          ...formData,
+          resumeUrl: url
+        })
+      });
 
-    // Simulate API call
-    setTimeout(() => {
-      setSubmitted(true);
+      if (response.ok) {
+        setSubmitted(true);
+      } else {
+        alert("Failed to submit application. Please try again.");
+      }
+    } catch (error) {
+      alert("Failed to submit application. Please try again.");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   if (submitted) {

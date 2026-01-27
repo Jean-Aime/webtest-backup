@@ -1,28 +1,46 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
 import SocialShare from "@/components/SocialShare/SocialShare";
 import GatedContent from "@/components/GatedContent/GatedContent";
-import SocialShare from "@/components/SocialShare/SocialShare";
 
 interface InsightPageProps {
   params: { slug: string };
 }
 
 export default async function InsightPage({ params }: InsightPageProps) {
-  const insights = await DataService.getInsights();
-  const insight = insights.find(i => i.slug === params.slug);
+  const insight = await prisma.insight.findUnique({
+    where: { slug: params.slug },
+    include: {
+      author: true,
+      industries: true,
+      services: true
+    }
+  });
 
   if (!insight) {
     notFound();
   }
 
-  const relatedInsights = insights.filter(i => 
-    i.id !== insight.id && 
-    (i.industries.some(ind => insight.industries.includes(ind)) ||
-     i.services.some(svc => insight.services.includes(svc)))
-  ).slice(0, 3);
+  const topics = JSON.parse(insight.topics || '[]');
+
+  // Get related insights based on shared industries or services
+  const relatedInsights = await prisma.insight.findMany({
+    where: {
+      AND: [
+        { id: { not: insight.id } },
+        {
+          OR: [
+            { industries: { some: { id: { in: insight.industries.map(i => i.id) } } } },
+            { services: { some: { id: { in: insight.services.map(s => s.id) } } } }
+          ]
+        }
+      ]
+    },
+    take: 3,
+    orderBy: { publishedAt: 'desc' }
+  });
 
   return (
     <div className="min-h-screen">
@@ -45,37 +63,79 @@ export default async function InsightPage({ params }: InsightPageProps) {
             <p className="text-xl text-gray-600 mb-6">{insight.excerpt}</p>
             
             <div className="flex items-center gap-4 pb-6 border-b">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-red-100 rounded-full"></div>
+              {insight.author.image ? (
+                <img src={insight.author.image} alt={insight.author.name} className="w-12 h-12 rounded-full" />
+              ) : (
+                <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-red-100 rounded-full"></div>
+              )}
               <div>
-                <p className="font-semibold">{insight.author.name}</p>
+                <a href={`/experts/${insight.author.slug}`} className="font-semibold hover:text-primary">
+                  {insight.author.name}
+                </a>
                 <p className="text-sm text-gray-600">{insight.author.role}</p>
               </div>
             </div>
           </div>
 
           <div className="prose max-w-none mb-12">
-            <div className="aspect-video bg-gradient-to-br from-primary/20 to-red-100 rounded-lg mb-8"></div>
-            <p className="text-gray-700 leading-relaxed">{insight.content}</p>
+            {insight.image && (
+              <div className="aspect-video bg-gradient-to-br from-primary/20 to-red-100 rounded-lg mb-8"></div>
+            )}
+            <div className="text-gray-700 leading-relaxed whitespace-pre-line">{insight.content}</div>
           </div>
 
           {insight.gated && insight.downloadUrl && (
             <div className="mb-12">
               <GatedContent
-                title={`Download: ${insight.title}`}
-                description="Get the full report with detailed analysis, case studies, and actionable recommendations."
+                insightTitle={insight.title}
                 downloadUrl={insight.downloadUrl}
-                contentType="PDF Report"
               />
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2 mb-8">
-            {insight.topics.map((topic) => (
-              <span key={topic} className="px-3 py-1 bg-gray-100 text-sm rounded-full">
-                {topic}
-              </span>
-            ))}
-          </div>
+          {topics.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-8">
+              {topics.map((topic: string) => (
+                <span key={topic} className="px-3 py-1 bg-gray-100 text-sm rounded-full">
+                  {topic}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {insight.industries.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-semibold mb-3">Related Industries:</h3>
+              <div className="flex flex-wrap gap-2">
+                {insight.industries.map((industry) => (
+                  <a
+                    key={industry.id}
+                    href={`/industries/${industry.slug}`}
+                    className="px-3 py-1 bg-primary/10 text-primary text-sm rounded hover:bg-primary hover:text-white transition-colors"
+                  >
+                    {industry.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {insight.services.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-semibold mb-3">Related Services:</h3>
+              <div className="flex flex-wrap gap-2">
+                {insight.services.map((service) => (
+                  <a
+                    key={service.id}
+                    href={`/services/${service.slug}`}
+                    className="px-3 py-1 bg-primary/10 text-primary text-sm rounded hover:bg-primary hover:text-white transition-colors"
+                  >
+                    {service.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-between py-6 border-t border-b">
             <SocialShare url={`/insights/${insight.slug}`} title={insight.title} />
@@ -114,11 +174,4 @@ export default async function InsightPage({ params }: InsightPageProps) {
       <Footer />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  const insights = await DataService.getInsights();
-  return insights.map((insight) => ({
-    slug: insight.slug,
-  }));
 }

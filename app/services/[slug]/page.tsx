@@ -1,4 +1,4 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
@@ -8,15 +8,25 @@ interface ServicePageProps {
 }
 
 export default async function ServicePage({ params }: ServicePageProps) {
-  const services = await DataService.getServices();
-  const service = services.find(s => s.slug === params.slug);
+  const service = await prisma.service.findUnique({
+    where: { slug: params.slug },
+    include: {
+      subServices: true,
+      industries: true,
+      insights: {
+        take: 3,
+        orderBy: { publishedAt: 'desc' }
+      },
+      experts: true
+    }
+  });
 
   if (!service) {
     notFound();
   }
 
-  const insights = await DataService.getInsights();
-  const serviceInsights = insights.filter(i => i.services.includes(service.slug));
+  const methodologies = JSON.parse(service.methodologies || '[]');
+  const tools = JSON.parse(service.tools || '[]');
 
   return (
     <div className="min-h-screen">
@@ -51,49 +61,71 @@ export default async function ServicePage({ params }: ServicePageProps) {
               )}
 
               <div className="grid md:grid-cols-2 gap-8">
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Methodologies</h3>
-                  <ul className="space-y-2">
-                    {service.methodologies.map((method, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">→</span>
-                        <span className="text-gray-600">{method}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {methodologies.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Methodologies</h3>
+                    <ul className="space-y-2">
+                      {methodologies.map((method: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-primary mt-1">→</span>
+                          <span className="text-gray-600">{method}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
-                <div>
-                  <h3 className="text-xl font-semibold mb-4">Tools & Accelerators</h3>
-                  <ul className="space-y-2">
-                    {service.tools.map((tool, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <span className="text-primary mt-1">→</span>
-                        <span className="text-gray-600">{tool}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {tools.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-semibold mb-4">Tools & Accelerators</h3>
+                    <ul className="space-y-2">
+                      {tools.map((tool: string, i: number) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <span className="text-primary mt-1">→</span>
+                          <span className="text-gray-600">{tool}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
 
             <div>
-              <div className="bg-gray-50 p-6 rounded-lg mb-6">
-                <h3 className="text-xl font-semibold mb-4">Related Industries</h3>
-                <div className="space-y-3">
-                  {service.industries.map((industrySlug) => (
-                    <a 
-                      key={industrySlug}
-                      href={`/industries/${industrySlug}`}
-                      className="block p-3 bg-white rounded hover:shadow-md transition-all"
-                    >
-                      <span className="text-sm font-medium capitalize">
-                        {industrySlug.replace('-', ' ')}
-                      </span>
-                    </a>
-                  ))}
+              {service.industries.length > 0 && (
+                <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                  <h3 className="text-xl font-semibold mb-4">Related Industries</h3>
+                  <div className="space-y-3">
+                    {service.industries.map((industry) => (
+                      <a 
+                        key={industry.id}
+                        href={`/industries/${industry.slug}`}
+                        className="block p-3 bg-white rounded hover:shadow-md transition-all"
+                      >
+                        <span className="text-sm font-medium">{industry.name}</span>
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {service.experts.length > 0 && (
+                <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                  <h3 className="text-xl font-semibold mb-4">Our Experts</h3>
+                  <div className="space-y-3">
+                    {service.experts.slice(0, 3).map((expert) => (
+                      <a 
+                        key={expert.id}
+                        href={`/experts/${expert.slug}`}
+                        className="block p-3 bg-white rounded hover:shadow-md transition-all"
+                      >
+                        <div className="font-medium">{expert.name}</div>
+                        <div className="text-xs text-gray-600">{expert.role}</div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="bg-primary text-white p-6 rounded-lg">
                 <h3 className="text-xl font-semibold mb-4">Ready to Get Started?</h3>
@@ -110,12 +142,12 @@ export default async function ServicePage({ params }: ServicePageProps) {
         </div>
       </section>
 
-      {serviceInsights.length > 0 && (
+      {service.insights.length > 0 && (
         <section className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-6">
             <h2 className="text-2xl font-bold mb-8">Related Insights</h2>
             <div className="grid md:grid-cols-3 gap-6">
-              {serviceInsights.slice(0, 3).map((insight) => (
+              {service.insights.map((insight) => (
                 <a
                   key={insight.id}
                   href={`/insights/${insight.slug}`}
@@ -138,11 +170,4 @@ export default async function ServicePage({ params }: ServicePageProps) {
       <Footer />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  const services = await DataService.getServices();
-  return services.map((service) => ({
-    slug: service.slug,
-  }));
 }

@@ -1,3 +1,5 @@
+import NewsletterForm from "./NewsletterForm";
+
 export default function Footer() {
   return (
     <footer className="bg-black text-white">
@@ -32,13 +34,9 @@ export default function Footer() {
           </div>
           
           <div>
-            <h4 className="font-semibold mb-4">Resources</h4>
-            <div className="space-y-2 text-sm text-gray-400">
-              <a href="/insights" className="block hover:text-white">Insights</a>
-              <a href="/experts" className="block hover:text-white">Our Experts</a>
-              <a href="/search" className="block hover:text-white">Search</a>
-              <a href="/contact" className="block hover:text-white">Contact Us</a>
-            </div>
+            <h4 className="font-semibold mb-4">Stay Connected</h4>
+            <p className="text-sm text-gray-400 mb-4">Get the latest insights delivered to your inbox</p>
+            <NewsletterForm />
           </div>
         </div>
 

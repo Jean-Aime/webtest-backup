@@ -1,202 +1,137 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DataService } from "@/lib/data";
-import { SearchResult } from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
+import Footer from "@/components/Footer/Footer";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const searchParams = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
+  const [results, setResults] = useState<any>({ industries: [], services: [], insights: [], experts: [] });
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    type: "",
-    industry: "",
-    service: "",
-    region: ""
-  });
-
-  const searchTypes = [
-    { value: "", label: "All Content" },
-    { value: "industry", label: "Industries" },
-    { value: "service", label: "Services" },
-    { value: "insight", label: "Insights" },
-    { value: "expert", label: "Experts" },
-    { value: "office", label: "Offices" },
-    { value: "career", label: "Careers" }
-  ];
 
   useEffect(() => {
-    const searchContent = async () => {
-      if (query.length < 2) {
-        setResults([]);
-        return;
-      }
+    if (query.length >= 2) {
+      performSearch();
+    }
+  }, [query]);
 
-      setLoading(true);
-      try {
-        const searchResults = await DataService.search(query, filters);
-        setResults(searchResults);
-      } catch (error) {
-        console.error("Search error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const performSearch = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setResults(data);
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const debounceTimer = setTimeout(searchContent, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [query, filters]);
+  const totalResults = results.industries.length + results.services.length + results.insights.length + results.experts.length;
 
   return (
-    <div className="min-h-screen pt-32 pb-16">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Search Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold mb-6">Search</h1>
-          <div className="max-w-2xl">
-            <div className="relative">
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search insights, industries, services, experts..."
-                className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-lg focus:border-primary focus:outline-none"
-              />
-              <svg className="absolute right-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-              </svg>
-            </div>
+    <div className="min-h-screen">
+      <MegaMenuHeader />
+      
+      <section className="py-20 pt-32">
+        <div className="max-w-7xl mx-auto px-6">
+          <h1 className="text-4xl font-bold mb-8">Search</h1>
+          
+          <div className="mb-8">
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search industries, services, insights, experts..."
+              className="w-full p-4 border rounded-lg text-lg focus:border-primary focus:outline-none"
+            />
           </div>
-        </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
-          {/* Filters Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-gray-50 p-6 rounded-lg sticky top-32">
-              <h3 className="font-semibold mb-4">Filters</h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Content Type</label>
-                  <select
-                    value={filters.type}
-                    onChange={(e) => setFilters({...filters, type: e.target.value})}
-                    className="w-full p-2 border rounded focus:border-primary focus:outline-none"
-                  >
-                    {searchTypes.map((type) => (
-                      <option key={type.value} value={type.value}>{type.label}</option>
+          {loading && <div className="text-center py-8">Searching...</div>}
+
+          {!loading && query.length >= 2 && (
+            <div>
+              <div className="mb-6 text-gray-600">
+                Found {totalResults} results for "{query}"
+              </div>
+
+              {results.industries.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold mb-4">Industries</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {results.industries.map((item: any) => (
+                      <a key={item.id} href={`/industries/${item.slug}`} className="bg-white border rounded-lg p-4 hover:shadow-md transition-all">
+                        <h3 className="font-semibold mb-2">{item.name}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                      </a>
                     ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Industry</label>
-                  <select
-                    value={filters.industry}
-                    onChange={(e) => setFilters({...filters, industry: e.target.value})}
-                    className="w-full p-2 border rounded focus:border-primary focus:outline-none"
-                  >
-                    <option value="">All Industries</option>
-                    <option value="healthcare">Healthcare</option>
-                    <option value="financial">Financial Services</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Region</label>
-                  <select
-                    value={filters.region}
-                    onChange={(e) => setFilters({...filters, region: e.target.value})}
-                    className="w-full p-2 border rounded focus:border-primary focus:outline-none"
-                  >
-                    <option value="">All Regions</option>
-                    <option value="north-america">North America</option>
-                    <option value="europe">Europe</option>
-                    <option value="asia-pacific">Asia Pacific</option>
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => setFilters({ type: "", industry: "", service: "", region: "" })}
-                  className="w-full text-sm text-primary hover:underline"
-                >
-                  Clear All Filters
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Search Results */}
-          <div className="lg:col-span-3">
-            {loading && (
-              <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-4 text-gray-600">Searching...</p>
-              </div>
-            )}
-
-            {!loading && query && (
-              <div className="mb-6">
-                <p className="text-gray-600">
-                  {results.length} results for "{query}"
-                </p>
-              </div>
-            )}
-
-            {!loading && results.length > 0 && (
-              <div className="space-y-6">
-                {results.map((result) => (
-                  <div key={result.id} className="bg-white border rounded-lg p-6 hover:shadow-md transition-all">
-                    <div className="flex items-start gap-4">
-                      {result.image && (
-                        <img 
-                          src={result.image} 
-                          alt={result.title}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded uppercase font-medium">
-                            {result.type}
-                          </span>
-                        </div>
-                        <h3 className="text-xl font-semibold mb-2">
-                          <a href={result.url} className="hover:text-primary transition-colors">
-                            {result.title}
-                          </a>
-                        </h3>
-                        <p className="text-gray-600 leading-relaxed">
-                          {result.excerpt}
-                        </p>
-                      </div>
-                    </div>
                   </div>
-                ))}
-              </div>
-            )}
+                </div>
+              )}
 
-            {!loading && query && results.length === 0 && (
-              <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                </svg>
-                <h3 className="text-xl font-semibold mb-2">No results found</h3>
-                <p className="text-gray-600">Try adjusting your search terms or filters</p>
-              </div>
-            )}
+              {results.services.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold mb-4">Services</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {results.services.map((item: any) => (
+                      <a key={item.id} href={`/services/${item.slug}`} className="bg-white border rounded-lg p-4 hover:shadow-md transition-all">
+                        <h3 className="font-semibold mb-2">{item.name}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {!query && (
-              <div className="text-center py-12">
-                <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd"/>
-                </svg>
-                <h3 className="text-xl font-semibold mb-2">Start your search</h3>
-                <p className="text-gray-600">Enter keywords to find insights, industries, services, and more</p>
-              </div>
-            )}
-          </div>
+              {results.insights.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold mb-4">Insights</h2>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {results.insights.map((item: any) => (
+                      <a key={item.id} href={`/insights/${item.slug}`} className="bg-white border rounded-lg p-4 hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="px-2 py-1 bg-primary/10 text-primary text-xs rounded uppercase">{item.type}</span>
+                        </div>
+                        <h3 className="font-semibold mb-2">{item.title}</h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">{item.excerpt}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {results.experts.length > 0 && (
+                <div className="mb-8">
+                  <h2 className="text-2xl font-bold mb-4">Experts</h2>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {results.experts.map((item: any) => (
+                      <a key={item.id} href={`/experts/${item.slug}`} className="bg-white border rounded-lg p-4 hover:shadow-md transition-all text-center">
+                        {item.image ? (
+                          <img src={item.image} alt={item.name} className="w-20 h-20 rounded-full mx-auto mb-3" />
+                        ) : (
+                          <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-red-100 rounded-full mx-auto mb-3"></div>
+                        )}
+                        <h3 className="font-semibold">{item.name}</h3>
+                        <p className="text-sm text-gray-600">{item.role}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {totalResults === 0 && (
+                <div className="text-center py-12 text-gray-600">
+                  No results found for "{query}". Try different keywords.
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }

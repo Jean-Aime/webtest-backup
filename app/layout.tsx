@@ -3,15 +3,25 @@ import "./globals.css";
 import { Roboto } from "next/font/google";
 import GoogleAnalytics from "@/components/Analytics/GoogleAnalytics";
 import CookieConsent from "@/components/CookieConsent/CookieConsent";
+import PerformanceMonitor from "@/components/PerformanceMonitor";
 
 const roboto = Roboto({
   weight: ["400", "700"],
   subsets: ["latin"],
+  display: 'swap'
 });
 
 export const metadata: Metadata = {
-  title: "JAS.COM Consulting",
-  description: "Global Management Consulting Firm",
+  title: "JAS.COM Consulting | Global Management Consulting Firm",
+  description: "Leading global management consulting firm specializing in digital transformation, strategy, and operations excellence.",
+  keywords: ["management consulting", "digital transformation", "strategy consulting", "business consulting"],
+  metadataBase: new URL('https://jas.com'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://jas.com',
+    siteName: 'JAS.COM Consulting'
+  }
 };
 
 export default function RootLayout({
@@ -22,6 +32,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={roboto.className}>
+        <PerformanceMonitor />
         <GoogleAnalytics />
         {children}
         <CookieConsent />

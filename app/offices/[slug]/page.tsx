@@ -1,4 +1,4 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
@@ -9,8 +9,9 @@ interface OfficePageProps {
 }
 
 export default async function OfficePage({ params }: OfficePageProps) {
-  const offices = await DataService.getOffices();
-  const office = offices.find(o => o.slug === params.slug);
+  const office = await prisma.office.findUnique({
+    where: { slug: params.slug }
+  });
 
   if (!office) {
     notFound();
@@ -39,21 +40,21 @@ export default async function OfficePage({ params }: OfficePageProps) {
                   <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"/>
                   </svg>
-                  <span className="text-gray-600">{office.phone}</span>
+                  <a href={`tel:${office.phone}`} className="text-gray-600 hover:text-primary">{office.phone}</a>
                 </div>
                 <div className="flex items-center gap-3">
                   <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
                     <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
                   </svg>
-                  <span className="text-gray-600">{office.email}</span>
+                  <a href={`mailto:${office.email}`} className="text-gray-600 hover:text-primary">{office.email}</a>
                 </div>
               </div>
             </div>
-            <div className="aspect-video bg-gradient-to-br from-primary/20 to-red-100 rounded-lg">
+            <div className="aspect-video rounded-lg overflow-hidden">
               <OfficeMap
                 address={office.address}
-                coordinates={office.coordinates}
+                coordinates={{ lat: office.lat, lng: office.lng }}
                 officeName={office.name}
               />
             </div>
@@ -76,11 +77,11 @@ export default async function OfficePage({ params }: OfficePageProps) {
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
-                      <span className="text-gray-600">Financial Services</span>
+                      <a href="/industries/financial-services" className="text-gray-600 hover:text-primary">Financial Services</a>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
-                      <span className="text-gray-600">Healthcare & Life Sciences</span>
+                      <a href="/industries/healthcare-life-sciences" className="text-gray-600 hover:text-primary">Healthcare & Life Sciences</a>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
@@ -98,11 +99,11 @@ export default async function OfficePage({ params }: OfficePageProps) {
                   <ul className="space-y-2">
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
-                      <span className="text-gray-600">Strategy Consulting</span>
+                      <a href="/services/strategy-operations" className="text-gray-600 hover:text-primary">Strategy Consulting</a>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
-                      <span className="text-gray-600">Digital Transformation</span>
+                      <a href="/services/digital-transformation" className="text-gray-600 hover:text-primary">Digital Transformation</a>
                     </li>
                     <li className="flex items-start gap-2">
                       <span className="text-primary mt-1">→</span>
@@ -164,19 +165,19 @@ export default async function OfficePage({ params }: OfficePageProps) {
               <p className="text-gray-600 text-sm mb-3">
                 Explore current openings and discover opportunities to grow your career with us.
               </p>
-              <span className="text-primary font-medium group-hover:translate-x-1 transition-transform">
+              <span className="text-primary font-medium group-hover:translate-x-1 transition-transform inline-block">
                 View Opportunities →
               </span>
             </a>
             
             <a href="/about" className="bg-white border rounded-lg p-6 hover:shadow-md transition-all group">
               <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">
-                Life at JAS.COME {office.city}
+                Life at JAS.COM {office.city}
               </h3>
               <p className="text-gray-600 text-sm mb-3">
                 Learn about our culture, values, and what makes our {office.city} office special.
               </p>
-              <span className="text-primary font-medium group-hover:translate-x-1 transition-transform">
+              <span className="text-primary font-medium group-hover:translate-x-1 transition-transform inline-block">
                 Learn More →
               </span>
             </a>
@@ -187,11 +188,4 @@ export default async function OfficePage({ params }: OfficePageProps) {
       <Footer />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  const offices = await DataService.getOffices();
-  return offices.map((office) => ({
-    slug: office.slug,
-  }));
 }

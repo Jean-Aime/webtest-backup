@@ -1,9 +1,11 @@
-import { DataService } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
 import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Footer from "@/components/Footer/Footer";
 
 export default async function OfficesPage() {
-  const offices = await DataService.getOffices();
+  const offices = await prisma.office.findMany({
+    orderBy: { region: 'asc' }
+  });
   
   const regions = [...new Set(offices.map(o => o.region))];
   const officesByRegion = regions.reduce((acc, region) => {
@@ -36,7 +38,11 @@ export default async function OfficesPage() {
                     href={`/offices/${office.slug}`}
                     className="bg-white border rounded-lg p-6 hover:shadow-lg transition-all group"
                   >
-                    <div className="aspect-video bg-gradient-to-br from-primary/20 to-red-100 rounded-lg mb-4"></div>
+                    {office.image ? (
+                      <img src={office.image} alt={office.name} className="aspect-video object-cover rounded-lg mb-4" />
+                    ) : (
+                      <div className="aspect-video bg-gradient-to-br from-primary/20 to-red-100 rounded-lg mb-4"></div>
+                    )}
                     <h3 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
                       {office.name}
                     </h3>
@@ -63,7 +69,7 @@ export default async function OfficesPage() {
           </p>
           <a 
             href="/contact"
-            className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all"
+            className="bg-white text-primary px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all inline-block"
           >
             Contact Us
           </a>

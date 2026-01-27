@@ -12,37 +12,46 @@ export default function ContactPage() {
     message: "",
     inquiry: ""
   });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form
     if (!formData.name || !formData.email || !formData.message) {
       alert("Please fill in all required fields.");
       return;
     }
 
-    // In production, integrate with CRM (HubSpot, Salesforce)
-    const leadData = {
-      ...formData,
-      timestamp: new Date(),
-      source: 'contact_form'
-    };
-    
-    console.log("Form submitted:", leadData);
-    
-    // Show success message
-    alert("Thank you for your inquiry. We'll be in touch within 24 hours!");
-    
-    // Reset form
-    setFormData({
-      name: "",
-      email: "",
-      company: "",
-      industry: "",
-      message: "",
-      inquiry: ""
-    });
+    setLoading(true);
+    try {
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          source: 'contact_form',
+          type: formData.inquiry || 'general'
+        })
+      });
+
+      if (response.ok) {
+        alert("Thank you for your inquiry. We'll be in touch within 24 hours!");
+        setFormData({
+          name: "",
+          email: "",
+          company: "",
+          industry: "",
+          message: "",
+          inquiry: ""
+        });
+      } else {
+        alert("Something went wrong. Please try again.");
+      }
+    } catch (error) {
+      alert("Failed to submit. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -117,9 +126,10 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+                  disabled={loading}
+                  className="bg-primary text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
-                  Send Message
+                  {loading ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             </div>
@@ -130,7 +140,7 @@ export default function ContactPage() {
                 <div className="space-y-2 text-gray-600">
                   <p>200 West Street, New York, NY 10013</p>
                   <p>+1 212 555 0100</p>
-                  <p>newyork@jascome.com</p>
+                  <p>newyork@jas.com</p>
                 </div>
               </div>
             </div>

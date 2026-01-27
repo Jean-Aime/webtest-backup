@@ -1,8 +1,5 @@
 {
-  "/offices/page": "app/offices/page.js",
-  "/offices/[slug]/page": "app/offices/[slug]/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/careers/page": "app/careers/page.js",
-  "/industries/page": "app/industries/page.js",
-  "/search/page": "app/search/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/admin/analytics/page": "app/admin/analytics/page.js",
+  "/admin/industries/page": "app/admin/industries/page.js"
 }
