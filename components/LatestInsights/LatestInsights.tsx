@@ -33,9 +33,10 @@ export default function LatestInsights() {
 
         <motion.div className="grid md:grid-cols-2 gap-8 mb-8" variants={stagger}>
           {insights.map((insight, i) => (
-            <motion.div 
+            <motion.a 
               key={i} 
-              className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer"
+              href="/insights"
+              className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group cursor-pointer block"
               variants={fadeUp}
               {...hoverScale}
             >
@@ -63,17 +64,18 @@ export default function LatestInsights() {
                   Read more <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </motion.span>
               </div>
-            </motion.div>
+            </motion.a>
           ))}
         </motion.div>
 
         <motion.div className="text-center" variants={fadeUp}>
-          <motion.button 
-            className="border-2 border-primary text-primary px-8 py-3 text-sm font-semibold hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg"
+          <motion.a 
+            href="/insights"
+            className="border-2 border-primary text-primary px-8 py-3 text-sm font-semibold hover:bg-primary hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg inline-block"
             {...buttonTap}
           >
             SEE ALL INSIGHTS
-          </motion.button>
+          </motion.a>
         </motion.div>
       </motion.div>
     </section>

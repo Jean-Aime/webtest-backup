@@ -55,20 +55,21 @@ export default function IndustrySelector() {
 
           <motion.div className="flex flex-wrap gap-2 mb-4" variants={stagger}>
             {industries.map((industry) => (
-              <motion.span
+              <motion.a
                 key={industry}
-                className="px-4 py-2 border border-primary text-primary text-sm rounded-full hover:bg-primary hover:text-white cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg"
+                href={`/industries/${industry.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`}
+                className="px-4 py-2 border border-primary text-primary text-sm rounded-full hover:bg-primary hover:text-white cursor-pointer transition-all duration-300 hover:scale-110 hover:shadow-lg inline-block"
                 variants={fadeUp}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
               >
                 {industry}
-              </motion.span>
+              </motion.a>
             ))}
           </motion.div>
           
           <motion.a 
-            href="#" 
+            href="/industries" 
             className="text-primary text-sm font-semibold inline-flex items-center gap-2 group"
             variants={fadeUp}
             whileHover={{ x: 4 }}

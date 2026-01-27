@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Roboto } from "next/font/google";
+import GoogleAnalytics from "@/components/Analytics/GoogleAnalytics";
+import CookieConsent from "@/components/CookieConsent/CookieConsent";
 
 const roboto = Roboto({
   weight: ["400", "700"],
@@ -8,8 +10,8 @@ const roboto = Roboto({
 });
 
 export const metadata: Metadata = {
-  title: "Templete",
-  description: "Global Healthcare Private Equity Report 2026",
+  title: "JAS.COM Consulting",
+  description: "Global Management Consulting Firm",
 };
 
 export default function RootLayout({
@@ -19,7 +21,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={roboto.className}>{children}</body>
+      <body className={roboto.className}>
+        <GoogleAnalytics />
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }

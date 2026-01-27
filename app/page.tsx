@@ -1,4 +1,4 @@
-import Header from "@/components/Header/Header";
+import MegaMenuHeader from "@/components/Header/MegaMenuHeader";
 import Hero from "@/components/Hero/Hero";
 import IndustrySelector from "@/components/IndustrySelector/IndustrySelector";
 import FeaturedStories from "@/components/FeaturedStories/FeaturedStories";
@@ -10,7 +10,7 @@ import Footer from "@/components/Footer/Footer";
 export default function Home() {
   return (
     <>
-      <Header />
+      <MegaMenuHeader />
       <Hero />
       <IndustrySelector />
       <FeaturedStories />

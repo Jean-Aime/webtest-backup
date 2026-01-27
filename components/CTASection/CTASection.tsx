@@ -25,12 +25,13 @@ export default function CTASection() {
           <motion.h3 className="text-2xl md:text-3xl font-light mb-6" variants={fadeUp}>
             What can we help you achieve?
           </motion.h3>
-          <motion.button 
-            className="border-2 border-white px-8 py-3 text-sm font-semibold hover:bg-white hover:text-primary transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+          <motion.a 
+            href="/contact"
+            className="border-2 border-white px-8 py-3 text-sm font-semibold hover:bg-white hover:text-primary transition-all duration-300 hover:scale-110 hover:shadow-2xl inline-block"
             {...buttonTap}
           >
             LET'S GET STARTED
-          </motion.button>
+          </motion.a>
         </motion.div>
 
         <motion.div 
@@ -40,12 +41,13 @@ export default function CTASection() {
           <motion.h3 className="text-2xl md:text-3xl font-light mb-6" variants={fadeUp}>
             Where will your career take you?
           </motion.h3>
-          <motion.button 
-            className="border-2 border-white px-8 py-3 text-sm font-semibold hover:bg-white hover:text-primary transition-all duration-300 hover:scale-110 hover:shadow-2xl"
+          <motion.a 
+            href="/careers"
+            className="border-2 border-white px-8 py-3 text-sm font-semibold hover:bg-white hover:text-primary transition-all duration-300 hover:scale-110 hover:shadow-2xl inline-block"
             {...buttonTap}
           >
             COME WORK HERE
-          </motion.button>
+          </motion.a>
         </motion.div>
       </motion.div>
     </section>

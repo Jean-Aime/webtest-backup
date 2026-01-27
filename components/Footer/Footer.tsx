@@ -2,34 +2,49 @@ export default function Footer() {
   return (
     <footer className="bg-black text-white">
       <div className="px-6 md:px-20 py-12">
-        <div className="grid md:grid-cols-2 gap-12 mb-12">
+        <div className="grid md:grid-cols-4 gap-8 mb-12">
           <div>
-            <h3 className="text-xl mb-4">
-              Stay ahead in a rapidly changing world. Subscribe to Templete Insights, our monthly look at the critical issues facing global businesses.
-            </h3>
+            <h4 className="font-semibold mb-4">Industries</h4>
+            <div className="space-y-2 text-sm text-gray-400">
+              <a href="/industries/healthcare-life-sciences" className="block hover:text-white">Healthcare & Life Sciences</a>
+              <a href="/industries/financial-services" className="block hover:text-white">Financial Services</a>
+              <a href="/industries" className="block hover:text-white">View All Industries →</a>
+            </div>
           </div>
           
           <div>
-            <div className="flex gap-4 mb-4">
-              <input
-                type="email"
-                placeholder="Email Address"
-                className="flex-1 bg-gray-800 px-4 py-3 text-white rounded"
-              />
-              <button className="bg-primary px-8 py-3 font-semibold hover:bg-red-700 transition">
-                SUBSCRIBE
-              </button>
+            <h4 className="font-semibold mb-4">Services</h4>
+            <div className="space-y-2 text-sm text-gray-400">
+              <a href="/services/digital-transformation" className="block hover:text-white">Digital Transformation</a>
+              <a href="/digital" className="block hover:text-white">Digital & AI</a>
+              <a href="/services" className="block hover:text-white">View All Services →</a>
             </div>
-            <label className="flex items-start gap-2 text-xs text-gray-400">
-              <input type="checkbox" className="mt-1" />
-              <span>I have read and accept Templete's Privacy Policy</span>
-            </label>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Company</h4>
+            <div className="space-y-2 text-sm text-gray-400">
+              <a href="/about" className="block hover:text-white">About Us</a>
+              <a href="/careers" className="block hover:text-white">Careers</a>
+              <a href="/offices" className="block hover:text-white">Offices</a>
+              <a href="/media" className="block hover:text-white">Media Center</a>
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">Resources</h4>
+            <div className="space-y-2 text-sm text-gray-400">
+              <a href="/insights" className="block hover:text-white">Insights</a>
+              <a href="/experts" className="block hover:text-white">Our Experts</a>
+              <a href="/search" className="block hover:text-white">Search</a>
+              <a href="/contact" className="block hover:text-white">Contact Us</a>
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 mb-8">
           <div className="w-3 h-3 bg-primary rounded-full"></div>
-          <span className="text-sm font-semibold tracking-wider">TEMPLETE</span>
+          <span className="text-sm font-semibold tracking-wider">JAS.COM</span>
         </div>
 
         <div className="flex gap-4 mb-8">
@@ -41,18 +56,15 @@ export default function Footer() {
         </div>
 
         <div className="flex flex-wrap gap-6 text-xs text-gray-400 mb-8">
-          <a href="#" className="hover:text-white">Contact us</a>
-          <a href="#" className="hover:text-white">Sustainability</a>
-          <a href="#" className="hover:text-white">Accessibility</a>
-          <a href="#" className="hover:text-white">Terms of use</a>
-          <a href="#" className="hover:text-white">Privacy</a>
-          <a href="#" className="hover:text-white">Modern Slavery Act Statement</a>
-          <a href="#" className="hover:text-white">Cookie Policy</a>
-          <a href="#" className="hover:text-white">Sitemap</a>
-          <a href="#" className="hover:text-white">Log In</a>
+          <a href="/contact" className="hover:text-white">Contact us</a>
+          <a href="/about" className="hover:text-white">Sustainability</a>
+          <a href="/about" className="hover:text-white">Accessibility</a>
+          <a href="/about" className="hover:text-white">Terms of use</a>
+          <a href="/about" className="hover:text-white">Privacy</a>
+          <a href="/admin" className="hover:text-white">Admin</a>
         </div>
 
-        <p className="text-xs text-gray-500">© 2025 Templete, Inc.</p>
+        <p className="text-xs text-gray-500">© 2025 JAS.COM Consulting, Inc.</p>
       </div>
     </footer>
   );
